@@ -1,156 +1,173 @@
-# Lab 25B - Game Day Report
+# Báo cáo Lab 25B - Game Day
 
-**Ho ten / nhom:** Nguyen Phat Thinh / 2A202602645  
-**Commit:** `be4d558` (report and grading artifacts commit)  
-**Diem tu dong (`make grade`):** 84 / 88
+**Họ tên / nhóm:** Nguyễn Phát Thịnh - 2A202602645
+**Commit:** `c6d82b9` (commit hoàn thiện code và artifact trước bản Việt hóa)
+**Điểm tự động (`make grade`):** 84 / 88
 
-## 1. Ket qua Game Day
+## 1. Kết quả Game Day
 
-| Bang | Client | Availability | P95 (s) | Amplification | Retry ratio | Cost/turn | Recovery (s) | PASS |
+| Băng | Client | Availability | P95 (s) | Amplification | Retry ratio | Cost/turn | Recovery (s) | PASS |
 |---|---|---:|---:|---:|---:|---:|---:|---|
-| G1 | naive | 0.7194 | 7.157 | 7.738 | 6.738 | 2.163 | 4.0 | No |
-| G1 | resilient | 0.9993 | 4.771 | 1.061 | 0.001 | 2.092 | 0.0 | Yes |
-| G2 | naive | 0.4560 | 15.034 | 9.904 | 8.904 | 4.627 | 155.0 | No |
-| G2 | resilient | 0.9992 | 6.637 | 1.027 | 0.004 | 2.093 | 0.0 | Yes |
-| G3 | naive | 1.0000 | 4.768 | 1.164 | 0.164 | 2.328 | 0.0 | No |
-| G3 | resilient | 1.0000 | 4.668 | 1.059 | 0.030 | 2.143 | 0.0 | Yes |
-| G4 | naive | 1.0000 | 13.764 | 1.004 | 0.004 | 2.008 | 0.0 | No |
-| G4 | resilient | 1.0000 | 5.626 | 1.014 | 0.002 | 2.072 | 0.0 | Yes |
-| G5 | naive | 0.3699 | 5.359 | 17.030 | 16.030 | 2.124 | - | No |
-| G5 | resilient | 0.8179 | 5.477 | 1.003 | 0.002 | 2.504 | - | Yes |
-| G6 | naive | 0.5170 | 4.836 | 12.344 | 11.344 | 2.009 | 0.0 | No |
-| G6 | resilient | 0.9765 | 5.990 | 1.039 | 0.005 | 2.245 | 0.0 | Yes |
+| G1 | naive | 0.7194 | 7.157 | 7.738 | 6.738 | 2.163 | 4.0 | Không |
+| G1 | resilient | 0.9993 | 4.771 | 1.061 | 0.001 | 2.092 | 0.0 | Có |
+| G2 | naive | 0.4560 | 15.034 | 9.904 | 8.904 | 4.627 | 155.0 | Không |
+| G2 | resilient | 0.9992 | 6.637 | 1.027 | 0.004 | 2.093 | 0.0 | Có |
+| G3 | naive | 1.0000 | 4.768 | 1.164 | 0.164 | 2.328 | 0.0 | Không |
+| G3 | resilient | 1.0000 | 4.668 | 1.059 | 0.030 | 2.143 | 0.0 | Có |
+| G4 | naive | 1.0000 | 13.764 | 1.004 | 0.004 | 2.008 | 0.0 | Không |
+| G4 | resilient | 1.0000 | 5.626 | 1.014 | 0.002 | 2.072 | 0.0 | Có |
+| G5 | naive | 0.3699 | 5.359 | 17.030 | 16.030 | 2.124 | - | Không |
+| G5 | resilient | 0.8179 | 5.477 | 1.003 | 0.002 | 2.504 | - | Có |
+| G6 | naive | 0.5170 | 4.836 | 12.344 | 11.344 | 2.009 | 0.0 | Không |
+| G6 | resilient | 0.9765 | 5.990 | 1.039 | 0.005 | 2.245 | 0.0 | Có |
 
-The resilient client passed all six public tapes. It had zero retry-after violations,
-zero client-error retries, zero incompatible routes and zero unnecessary failovers.
+Resilient client vượt qua cả 6 băng public. Client không có vi phạm
+`retry-after`, không retry lỗi client, không route không tương thích và không
+failover không cần thiết.
 
-## 2. Client configuration
+## 2. Cấu hình client
 
-| Parameter | Value | Reason |
+| Tham số | Giá trị | Lý do |
 |---|---:|---|
-| attempt_timeout_s | 8.0 | Leaves time for failover inside the 30 second user deadline; G4 P95 is 5.626s |
-| max_attempts_per_provider | 2 | Allows one same-provider retry without amplification; G2 was 1.027 |
-| backoff_base_s / cap_s | 0.25 / 4.0 | Full jitter spreads retries while keeping the deadline usable |
-| retry_budget_ratio | 0.1 | Keeps retries bounded; G3 retry ratio was 0.030 |
-| breaker.window_size / min_calls | 20 / 10 | Avoids opening on a tiny sample while reacting during an incident |
-| failure_rate_threshold | 0.5 | Opens on sustained provider failure |
-| slow_call_s | 5.0 | Detects G4 degradation before timeout accumulation |
-| open_duration_s | 10.0 | Gives a degraded provider time to recover |
-| half_open_max_probes | 2 | Limits thundering herd during recovery |
+| `attempt_timeout_s` | 8.0 | Vẫn còn thời gian failover trong deadline 30 giây; P95 của G4 là 5.626 giây |
+| `max_attempts_per_provider` | 2 | Cho phép retry một lần trên cùng provider nhưng không làm amplification tăng mạnh; G2 là 1.027 |
+| `backoff_base_s / cap_s` | 0.25 / 4.0 | Full jitter phân tán retry và vẫn giữ đủ thời gian cho deadline |
+| `retry_budget_ratio` | 0.1 | Giới hạn retry; retry ratio của G3 là 0.030 |
+| `breaker.window_size / min_calls` | 20 / 10 | Tránh mở breaker khi mẫu quá nhỏ nhưng vẫn phản ứng trong incident |
+| `failure_rate_threshold` | 0.5 | Mở breaker khi provider lỗi kéo dài |
+| `slow_call_s` | 5.0 | Phát hiện suy giảm ở G4 trước khi timeout tích lũy |
+| `open_duration_s` | 10.0 | Cho provider suy giảm thời gian hồi phục |
+| `half_open_max_probes` | 2 | Giới hạn thundering herd trong quá trình hồi phục |
 
-Decision table:
+### Bảng quyết định của `on_error`
 
-| Error | Breaker | Retry/failover |
+| Loại lỗi | Breaker | Retry / failover |
 |---|---|---|
-| 400 client error | release | Give up, never retry or fail over |
-| 429 quota | release | Long provider cooldown, fail over |
-| 429 rate limit | release | Honor retry-after and fail over |
-| 529/503/5xx/timeout | failure | Retry same provider if budget and deadline allow, then fail over |
+| Lỗi client 400 | release | `GiveUp`, không retry và không failover |
+| Hết quota 429 | release | Cooldown provider dài rồi failover |
+| Rate limit 429 | release | Tôn trọng `retry-after` rồi failover |
+| 529/503/5xx/timeout | failure | Retry cùng provider nếu còn budget và deadline, sau đó failover |
 
-## 3. Experiments
+## 3. Ba thí nghiệm
 
-1. The retry budget is a final defense even when the breaker is misconfigured. In
-   normal configuration G2 amplification was 1.027 and G3 retry ratio was 0.030.
-   With a breaker that never opens, disabling the budget would allow every transient
-   error to create another attempt, while the budget caps retry traffic near 10%.
-   The breaker reacts to provider health; the budget protects the whole system from
-   retry amplification, so both are needed.
+1. Retry budget là lớp bảo vệ cuối ngay cả khi breaker cấu hình sai. Với cấu hình
+   bình thường, amplification của G2 là 1.027 và retry ratio của G3 là 0.030.
+   Nếu breaker không bao giờ mở, việc tắt budget sẽ cho phép mọi lỗi tạm thời tạo
+   thêm attempt; budget giới hạn lưu lượng retry gần mức 10%. Breaker phản ứng
+   theo health của provider, còn budget bảo vệ toàn hệ thống khỏi retry
+   amplification, vì vậy cần cả hai.
 
-2. A 30 second attempt timeout is unsafe during G6 because an in-flight request can
-   consume the entire user deadline and prevent fallback. G4 changes little because
-   it has successful slow responses rather than provider failures. Timeout should be
-   based on normal-tail latency, the user deadline and the time required for a useful
-   fallback, not only on the provider maximum.
+2. Timeout 30 giây không an toàn trong G6 vì một request đang bay có thể chiếm
+   toàn bộ deadline của user và ngăn fallback. G4 gần như không đổi vì đây là
+   các response thành công nhưng chậm, không phải provider lỗi. Timeout nên dựa
+   trên latency phần đuôi khi hệ thống bình thường, deadline của user và thời
+   gian cần cho một lần fallback hữu ích, không chỉ dựa trên thời gian tối đa
+   provider có thể chạy.
 
-3. Removing tool capability filtering would allow `gamma-mini` to receive a tool
-   request. That provider cannot perform tool calling, so the result is an
-   incompatible model output rather than a valid fallback. Product-wise, this
-   means the system spent money and latency on an answer that could never satisfy
-   the requested operation.
+3. Nếu bỏ lọc capability của tool, `gamma-mini` sẽ nhận tool request dù không hỗ
+   trợ tool calling. Kết quả là model output không tương thích thay vì fallback
+   hợp lệ. Theo góc nhìn product, hệ thống đã tiêu tốn chi phí và latency cho một
+   request vốn không thể hoàn thành đúng yêu cầu.
 
-## 4. Refund workflow
+## 4. Workflow hoàn tiền
 
 | Executor | Completion | Crashes | Duplicate refunds | Duplicate emails | Lost refunds | Overpaid | Wasted LLM/crash |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | naive | 1.000 | 81 | 128 | 81 | 0 | 1496700 cents | 1.123 |
 | yours | 1.000 | 66 | 0 | 0 | 0 | 0 | 0.303 |
 
-An idempotency key alone prevents the payment service from executing the same
-effect twice, but it does not prevent recomputing already completed LLM steps.
-A checkpoint alone can resume work, but it cannot deduplicate a side effect whose
-response was lost. The correct order is execute the step, then checkpoint its
-successful result. Writing the checkpoint before payment could make a worker skip
-payment after a crash and lose the refund.
+Chỉ idempotency key chưa đủ vì nó ngăn payment service thực hiện side effect
+trùng, nhưng không ngăn việc tính lại các bước LLM đã hoàn tất. Chỉ checkpoint
+cũng chưa đủ vì nó giúp resume nhưng không khử trùng lặp side effect khi response
+bị mất. Thứ tự đúng là thực thi step, sau đó chỉ ghi checkpoint khi step thành
+công. Nếu ghi checkpoint trước khi gọi payment, worker có thể bỏ qua payment sau
+crash và làm mất refund.
 
-## 5. Alerting and error budget
+## 5. Alerting và error budget
 
-The burn-rate alerter passed the public SLI data with three pages, one ticket and
-zero false pages. It detected checkout_bug after 27 minutes, provider_outage after
-4 minutes, and degraded_evening after 291 minutes. It ticketed slow_leak after
-1337 minutes without paging. The 30-day report has 25,901,755 requests, 55,618
-bad requests, 99.7853% availability, 42.95% budget consumed and 57.05% remaining,
-so releases are not frozen.
+| Sự cố | Kỳ vọng | Naive alerter | Burn-rate alerter | Độ trễ phát hiện (phút) |
+|---|---|---|---|---:|
+| `checkout_bug` | page | page | page | 27 |
+| `provider_outage` | page | page | page | 4 |
+| `deploy_blip` | none | page | none | - |
+| `slow_leak` | ticket | none | ticket | 1337 |
+| `degraded_evening` | page | page | page | 291 |
+| `night_spike` | none | page | none | - |
+| `small_bump` | none | page | none | - |
 
-The workflow protects correctness of side effects; alerting protects detection and
-operational response. Both are needed: a correct workflow can still be unavailable,
-and an alert cannot make a payment exactly-once.
+Burn-rate alerter vượt qua dữ liệu SLI public với 3 page, 1 ticket và 0 false
+page. Hệ thống phát hiện `checkout_bug` sau 27 phút, `provider_outage` sau 4
+phút và `degraded_evening` sau 291 phút. Hệ thống tạo ticket cho `slow_leak` sau
+1337 phút mà không page. Báo cáo 30 ngày có 25,901,755 request, 55,618 request
+lỗi, availability 99.7853%, đã tiêu thụ 42.95% error budget và còn 57.05%, vì
+vậy chưa cần freeze release.
 
-## 6. Postmortem - G2 with naive client
+Workflow bảo vệ tính đúng đắn của side effect; alerting bảo vệ khả năng phát hiện
+và phản ứng vận hành. Cần cả hai vì workflow đúng vẫn có thể unavailable, còn
+alert không thể tự bảo đảm payment exactly-once.
 
-**Summary:** At t=120, alpha lost 75% of its GPU capacity. The three nested retry
-layers multiplied load while timed-out requests continued consuming provider slots.
-Although alpha recovered at t=300, abandoned queued work and continuing retries kept
-the system in a metastable overloaded state.
+## 6. Postmortem - G2 với naive client
 
-**Impact:** Naive availability was 0.4560, amplification was 9.904, and recovery was
-155 seconds after provider restore. The resilient client reached 0.9992 availability,
-1.027 amplification and immediate measured recovery.
+**Tóm tắt:** Tại t=120, alpha mất 75% năng lực GPU. Ba tầng retry lồng nhau
+đã khuếch đại tải, trong khi các request đã timeout vẫn tiếp tục chiếm slot của
+provider. Dù alpha hồi phục tại t=300, các request bị bỏ lại trong hàng đợi cùng
+retry tiếp tục giữ hệ thống trong trạng thái quá tải metastable.
 
-| Time | Event | Evidence |
+**Ảnh hưởng:** Naive client có availability 0.4560, amplification 9.904 và
+recovery 155 giây sau khi provider hồi phục. Resilient client đạt availability
+0.9992, amplification 1.027 và recovery đo được bằng 0.
+
+| Thời gian | Sự kiện | Bằng chứng |
 |---:|---|---|
-| 120 | Alpha loses 75% capacity | Incident trigger |
-| 120-150 | Queue and retries grow | Attempts exceed successful calls in the generated CSV |
-| 180 | Client timeouts become visible | Provider reports client timeouts |
-| 240 | Retry storm is sustained | Naive amplification is 9.904 |
-| 300 | Alpha fully restores | Scenario restore point |
-| 300+ | System remains degraded | Naive recovery is 155s, not zero |
+| 120 | Alpha mất 75% năng lực | `attempts_alpha/s=5`, `success_ratio=7/7=1.00` |
+| 150 | Hàng đợi và retry tăng | `attempts_alpha/s=163`, `success_ratio=0/3=0.00` |
+| 180 | Timeout phía client bắt đầu xuất hiện | `attempts_alpha/s=138`, `success_ratio=0/5=0.00` |
+| 240 | Retry storm duy trì | `attempts_alpha/s=105`, `success_ratio=0/2=0.00`; amplification là 9.904 |
+| 300 | Alpha hồi phục hoàn toàn | `attempts_alpha/s=115`, `success_ratio=0/5=0.00` |
+| Sau 300 | Hệ thống vẫn suy giảm | Recovery của naive là 155 giây, không phải 0 |
 
-The trigger was the GPU capacity loss. The root cause was the three-layer retry
-design without jitter, budget or breaker. Requests that had already timed out still
-occupied provider slots, while new retries kept arriving faster than the recovered
-capacity could drain the queue.
+Trigger là việc mất năng lực GPU. Root cause là thiết kế retry ba tầng không
+giới hạn, không jitter, không retry budget và không circuit breaker. Các request
+đã timeout vẫn chiếm slot provider, trong khi retry mới tiếp tục đến nhanh hơn
+khả năng xử lý sau khi provider hồi phục.
 
-Helpful controls are bounded retries, breaker fail-fast behavior, capability-aware
-fallback and virtual-time metrics. Making the timeout longer or adding more retries
-would worsen the queue and hide the availability failure.
+Các cơ chế giúp giảm ảnh hưởng là retry có giới hạn, breaker fail-fast,
+fallback có kiểm tra capability và metric theo virtual time. Tăng timeout hoặc
+thêm retry sẽ làm hàng đợi nặng hơn và che giấu vấn đề availability.
 
-| # | Action | Type | Owner | Verification |
+| # | Hành động | Loại | Owner | Cách kiểm chứng |
 |---:|---|---|---|---|
-| 1 | Keep one retry layer with a token budget | Prevent | Platform | G2 amplification <= 1.2 in CI |
-| 2 | Alert on amplification and recovery time | Detect | SRE | Synthetic G2 page within the defined window |
-| 3 | Use breaker plus half-open probe limits | Mitigate | Runtime | Hidden scenarios recover within 30s |
+| 1 | Duy trì một tầng retry với retry budget | prevent | Platform | Amplification của G2 <= 1.2 trong CI |
+| 2 | Alert theo amplification và recovery time | detect | SRE | Synthetic G2 tạo page trong cửa sổ quy định |
+| 3 | Dùng breaker và giới hạn half-open probe | mitigate | Runtime | Scenario ẩn hồi phục trong <= 30 giây |
 
-## 7. Remaining weakness
+## 7. Điểm yếu còn lại
 
-The client still pays more when beta carries spillover, especially in G5 where
-cost per good turn reached 2.504. A production improvement would add adaptive
-capacity-aware routing and an explicit cost budget while preserving capability and
-deadline constraints.
+Client vẫn tốn chi phí cao hơn khi beta phải gánh spillover, đặc biệt cost per
+good turn của G5 tăng lên 2.504. Một cải tiến production có thể là routing thích
+ứng theo capacity và thêm cost budget rõ ràng, nhưng vẫn phải giữ các ràng buộc
+capability và deadline.
 
 ## 8. Cache
 
-| Client | Availability | FAQ availability | Hit ratio | Stale served | Wrong answers | Outdated | Cost/turn | PASS |
+| Client | Availability | FAQ availability | Cache hit ratio | Stale served | Wrong answers | Outdated answers | Cost/turn | PASS |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
-| resilient (no cache) | 0.8373 | 0.8424 | 0.000 | 0 | 0 | 0 | 1.386 | No |
-| cached | 0.9110 | 0.9628 | 0.578 | 150 | 0 | 4 | 0.965 | Yes |
+| resilient (không cache) | 0.8373 | 0.8424 | 0.000 | 0 | 0 | 0 | 1.386 | Không |
+| cached | 0.9110 | 0.9628 | 0.578 | 150 | 0 | 4 | 0.965 | Có |
 
-| Cache parameter | Value | Reason |
+| Tham số cache | Giá trị | Lý do |
 |---|---:|---|
-| similarity_threshold | 0.97 | Prevents the 181 wrong-question hits seen at 0.80 |
-| ttl_s | 60 | Limits silent document-update exposure; outdated answers reduced to 4 |
-| max_stale_s | 180 | Supplies 150 stale answers during outage without extending stale use indefinitely |
+| `similarity_threshold` | 0.97 | Ngăn 181 lần hit nhầm câu hỏi đã xảy ra ở ngưỡng 0.80 |
+| `ttl_s` | 60 | Giới hạn thời gian phơi nhiễm với thay đổi tài liệu không có webhook; outdated answers còn 4 |
+| `max_stale_s` | 180 | Cung cấp 150 câu trả lời stale trong outage nhưng không kéo dài stale vô hạn |
 
-Personal questions are excluded because user-scoped caching still creates privacy,
-authorization and invalidation risks; a personal answer must be recomputed against
-current user data. During a cache-covered outage, alerting should use provider
-health, GiveUp rate, stale-served rate and cache age, not only user availability.
+Câu hỏi cá nhân bị loại khỏi cache vì cache theo user vẫn tạo rủi ro về quyền
+riêng tư, phân quyền và invalidation; câu trả lời cá nhân phải được tính lại
+theo dữ liệu hiện tại của user. Khi cache vẫn trả lời được trong lúc provider
+outage, alert nên dựa thêm trên provider health, tỷ lệ `GiveUp`, tỷ lệ stale
+served và tuổi cache, không chỉ dựa vào availability của user.
+
+Trong C1, `wrong_answers_by_reason` là `{}` và tổng `wrong_answers` bằng 0;
+không có nhóm nguyên nhân trả lời sai nào phát sinh. Có 4 `outdated_answers`,
+nhưng không có phân rã nguyên nhân chi tiết trong artifact benchmark; con số này
+được dùng trực tiếp để kiểm tra ngưỡng outdated của rubric.
