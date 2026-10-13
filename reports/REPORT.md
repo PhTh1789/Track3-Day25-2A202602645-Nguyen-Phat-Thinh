@@ -1,7 +1,7 @@
 # Báo cáo Lab 25B - Game Day
 
 **Họ tên / nhóm:** Nguyễn Phát Thịnh - 2A202602645
-**Commit:** `c6d82b9` (commit hoàn thiện code và artifact trước bản Việt hóa)
+**Commit:** `300419a` (commit bản báo cáo Việt hóa)
 **Điểm tự động (`make grade`):** 84 / 88
 
 ## 1. Kết quả Game Day
