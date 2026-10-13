@@ -1,7 +1,7 @@
 # Lab 25B - Game Day Report
 
 **Ho ten / nhom:** Nguyen Phat Thinh / 2A202602645  
-**Commit:** update after final submission commit  
+**Commit:** `be4d558` (report and grading artifacts commit)  
 **Diem tu dong (`make grade`):** 84 / 88
 
 ## 1. Ket qua Game Day
